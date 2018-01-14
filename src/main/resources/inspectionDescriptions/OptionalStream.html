@@ -1,0 +1,6 @@
+<html>
+<body>
+<p>This inspection reports about Optional call chains which could be simplified by Java 9 Optional api. Example:</p>
+<p><code>collection.filter(Optional::isPresent).map(Optional::get)</code> &rarr; <code>collection.flatMap(Optional::stream)</code></p>
+</body>
+</html>

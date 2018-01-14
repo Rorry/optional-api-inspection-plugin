@@ -1,0 +1,18 @@
+<idea-plugin>
+  <id>com.github.rorry.optional.api.inspection.plugin</id>
+  <name>Optional-Api-Inspection</name>
+  <version>0.1</version>
+  <vendor email="rorry.rx.6@gmail.com" url="https://github.com/Rorry">Github Rorry</vendor>
+
+  <description>This inspection reports about Optional call chains which could be simplified by Java 9 Optional api.</description>
+
+  <change-notes>
+    A simple inspection plugin for Optional.stream method
+  </change-notes>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+  <idea-version since-build="172.0"/>
+  <extensions defaultExtensionNs="com.intellij">
+    <inspectionToolProvider implementation="com.github.rorry.OptionalStreamInspectionProvider"/>
+  </extensions>
+</idea-plugin>

@@ -1,0 +1,51 @@
+plugins {
+    id 'jacoco'
+    id "org.jetbrains.intellij" version "0.2.17"
+}
+
+apply plugin: 'org.jetbrains.intellij'
+apply plugin: 'idea'
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://dl.bintray.com/jetbrains/intellij-plugin-service' }
+}
+
+group pluginGroup
+version = pluginVersion
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+
+intellij {
+    version System.getenv().getOrDefault('IDEA_VERSION', ideaVersion)
+    type ideaType
+    pluginName pluginName
+    downloadSources Boolean.valueOf(sources)
+    sameSinceUntilBuild Boolean.valueOf(isEAP)
+    alternativeIdePath idePath
+    updateSinceUntilBuild false
+}
+
+idea {
+    project {
+        jdkName         = javaVersion
+        languageLevel   = javaVersion
+    }
+}
+
+test {
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+}
