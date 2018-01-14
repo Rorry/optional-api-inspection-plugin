@@ -35,7 +35,7 @@ public class OptionalStreamInspection extends AbstractBaseJavaLocalInspectionToo
     @NotNull
     @Override
     public String getGroupDisplayName() {
-        return GroupNames.CONFUSING_GROUP_NAME;
+        return GroupNames.DECLARATION_REDUNDANCY;
     }
 
     @Nls
