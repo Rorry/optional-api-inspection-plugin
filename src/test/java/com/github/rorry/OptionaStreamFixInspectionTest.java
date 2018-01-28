@@ -26,7 +26,7 @@ public class OptionaStreamFixInspectionTest extends LightQuickFixParameterizedTe
 
     @Override
     protected String getBasePath() {
-        return "optionalStreams";
+        return "/optionalStreams";
     }
 
     @NotNull

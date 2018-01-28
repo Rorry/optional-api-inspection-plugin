@@ -14,5 +14,6 @@
   <idea-version since-build="172.0"/>
   <extensions defaultExtensionNs="com.intellij">
     <inspectionToolProvider implementation="com.github.rorry.OptionalStreamInspectionProvider"/>
+    <inspectionToolProvider implementation="com.github.rorry.CollectionOfOptionalsInspectionProvider"/>
   </extensions>
 </idea-plugin>
