@@ -1,4 +1,4 @@
-// "Stream of optionals can be simplified" "true"
+// "Stream chain of optionals can be simplified" "true"
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;

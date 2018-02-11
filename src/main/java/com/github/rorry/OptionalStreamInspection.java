@@ -14,7 +14,6 @@ import com.siyeh.ig.callMatcher.CallMatcher;
 import com.siyeh.ig.psiutils.CommentTracker;
 import com.siyeh.ig.psiutils.MethodCallUtils;
 import org.jetbrains.annotations.Nls;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,21 +27,20 @@ public class OptionalStreamInspection extends AbstractBaseJavaLocalInspectionToo
     private static final CallMatcher STREAM_FILTER =
             CallMatcher.instanceCall(CommonClassNames.JAVA_UTIL_STREAM_STREAM, "filter").parameterCount(1);
 
-    @NonNls
-    private static final String DESCRIPTION_TEMPLATE = "Stream of optionals can be simplified";
+    private static final String DESCRIPTION = "Stream chain of optionals can be simplified";
 
     @Nls
     @NotNull
     @Override
     public String getGroupDisplayName() {
-        return GroupNames.DECLARATION_REDUNDANCY;
+        return GroupNames.LANGUAGE_LEVEL_SPECIFIC_GROUP_NAME;
     }
 
     @Nls
     @NotNull
     @Override
     public String getDisplayName() {
-        return "Stream of optionals can be simplified";
+        return DESCRIPTION;
     }
 
     @NotNull
@@ -89,7 +87,7 @@ public class OptionalStreamInspection extends AbstractBaseJavaLocalInspectionToo
                     return;
                 }
 
-                holder.registerProblem(expression, DESCRIPTION_TEMPLATE, new OptionalStreamFix(beforeQualifierExpression.getText()));
+                holder.registerProblem(expression, DESCRIPTION, new OptionalStreamFix(beforeQualifierExpression.getText()));
             }
         };
     }
@@ -116,7 +114,7 @@ public class OptionalStreamInspection extends AbstractBaseJavaLocalInspectionToo
         @NotNull
         @Override
         public String getName() {
-            return "Stream of optionals can be simplified";
+            return DESCRIPTION;
         }
 
         @Nls

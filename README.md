@@ -5,10 +5,12 @@ This project is a simple Intellij Plugin with set of inspections about using Opt
 * a inspection about simplifying Optional call chains by a new Java 9 Optional Api.
 Example:
 ````
-    collection.filter(Optional::isPresent).map(Optional::get) --> collection.flatMap(Optional::stream)
+    stream.filter(Optional::isPresent).map(Optional::get) --> stream.flatMap(Optional::stream)
 ````
+See: [Java 9 Optional docs](https://docs.oracle.com/javase/9/docs/api/java/util/Optional.html#flatMap-java.util.function.Function-)
 * a inspection about using a collection with an optional type parameter. 
-For instance, it is recommended instead of `List<Optional<String>>` just use the `List<String>` with a smaller size. 
+For instance, it is recommended instead of `List<Optional<String>>` just use the `List<String>` with a smaller size.
+See: [Java 8 anti-patterns](https://www.youtube.com/watch?v=ohu8dJu8KKw) 
                                 
                      
 Building the plugin
