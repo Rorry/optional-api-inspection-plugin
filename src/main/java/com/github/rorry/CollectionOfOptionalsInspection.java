@@ -3,13 +3,14 @@ package com.github.rorry;
 import com.intellij.codeInsight.daemon.GroupNames;
 import com.intellij.codeInspection.AbstractBaseJavaLocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.psi.CommonClassNames;
 import com.intellij.psi.JavaElementVisitor;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeElement;
-import com.intellij.psi.impl.source.PsiClassReferenceType;
+import com.intellij.psi.util.InheritanceUtil;
 import com.intellij.psi.util.PsiUtil;
-import com.siyeh.ig.psiutils.CollectionUtils;
 import com.siyeh.ig.psiutils.TypeUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -52,17 +53,13 @@ public class CollectionOfOptionalsInspection extends AbstractBaseJavaLocalInspec
             public void visitTypeElement(PsiTypeElement typeElement) {
                 super.visitTypeElement(typeElement);
                 final PsiType type = typeElement.getType();
-                if (!CollectionUtils.isCollectionClassOrInterface(type)) {
+                final PsiClass resolvedClass = PsiUtil.resolveClassInClassTypeOnly(type);
+                if (resolvedClass == null || !InheritanceUtil.isInheritor(resolvedClass, CommonClassNames.JAVA_UTIL_COLLECTION)) {
                     return;
                 }
 
-                final PsiType[] parameters = ((PsiClassReferenceType) type).getParameters();
-                if (parameters.length != 1) {
-                    return;
-                }
-
-                final PsiType parameterType = parameters[0];
-                if (!TypeUtils.isOptional(parameterType)) {
+                final PsiType parameterType = PsiUtil.extractIterableTypeParameter(type, false);
+                if (parameterType == null || !TypeUtils.isOptional(parameterType)) {
                     return;
                 }
 
