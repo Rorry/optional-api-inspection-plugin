@@ -8,19 +8,16 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.CommonClassNames;
 import com.intellij.psi.JavaElementVisitor;
-import com.intellij.psi.LambdaUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiExpression;
-import com.intellij.psi.PsiLambdaExpression;
 import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.PsiMethodReferenceExpression;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.util.PsiUtil;
-import com.intellij.refactoring.util.LambdaRefactoringUtil;
 import com.intellij.util.ObjectUtils;
 import com.siyeh.ig.callMatcher.CallMatcher;
 import com.siyeh.ig.psiutils.CommentTracker;
+import com.siyeh.ig.psiutils.FunctionalExpressionUtils;
 import com.siyeh.ig.psiutils.MethodCallUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -35,11 +32,8 @@ public class OptionalStreamInspection extends AbstractBaseJavaLocalInspectionToo
             CallMatcher.instanceCall(CommonClassNames.JAVA_UTIL_STREAM_STREAM, "map").parameterCount(1);
     private static final CallMatcher STREAM_FILTER =
             CallMatcher.instanceCall(CommonClassNames.JAVA_UTIL_STREAM_STREAM, "filter").parameterCount(1);
-    private static final CallMatcher OPTIONAL_GET =
-            CallMatcher.instanceCall(CommonClassNames.JAVA_UTIL_OPTIONAL, "get").parameterCount(0);
-    private static final CallMatcher OPTIONAL_IS_PRESENT =
-            CallMatcher.instanceCall(CommonClassNames.JAVA_UTIL_OPTIONAL, "isPresent").parameterCount(0);
-
+    private static final String OPTIONAL_GET_METHOD = "get";
+    private static final String OPTIONAL_IS_PRESENT_METHOD = "isPresent";
     private static final String DESCRIPTION = "Stream chain of optionals can be simplified";
 
     @Nls
@@ -68,8 +62,14 @@ public class OptionalStreamInspection extends AbstractBaseJavaLocalInspectionToo
                 super.visitMethodCallExpression(expression);
 
                 /* .map(Optional::get) */
-                if (!checkForMethodCallAndExactLambdaCall(expression, STREAM_MAP, OPTIONAL_GET)) return;
-
+                if (!STREAM_MAP.test(expression)) {
+                    return;
+                }
+                final PsiExpression psiGetOptExpression = expression.getArgumentList().getExpressions()[0];
+                if (!FunctionalExpressionUtils.isFunctionalReferenceTo(psiGetOptExpression,
+                                CommonClassNames.JAVA_UTIL_OPTIONAL, null, OPTIONAL_GET_METHOD)) {
+                    return;
+                }
                 final PsiMethodCallExpression psiMethodCallExpression = MethodCallUtils.getQualifierMethodCall(expression);
                 if (psiMethodCallExpression == null) {
                     return;
@@ -77,9 +77,14 @@ public class OptionalStreamInspection extends AbstractBaseJavaLocalInspectionToo
 
                 /* .filter(Optional::isPresent)
                 *  .map(Optional::get) */
-                if (!checkForMethodCallAndExactLambdaCall(psiMethodCallExpression, STREAM_FILTER, OPTIONAL_IS_PRESENT))
+                if (!STREAM_FILTER.test(psiMethodCallExpression)) {
                     return;
-
+                }
+                final PsiExpression psiIsPresentOptExpression = psiMethodCallExpression.getArgumentList().getExpressions()[0];
+                if (!FunctionalExpressionUtils.isFunctionalReferenceTo(psiIsPresentOptExpression,
+                        CommonClassNames.JAVA_UTIL_OPTIONAL, null, OPTIONAL_IS_PRESENT_METHOD)) {
+                    return;
+                }
                 final PsiExpression beforeQualifierExpression = psiMethodCallExpression.getMethodExpression().getQualifierExpression();
                 if (beforeQualifierExpression == null) {
                     return;
@@ -99,48 +104,6 @@ public class OptionalStreamInspection extends AbstractBaseJavaLocalInspectionToo
     @Override
     public JComponent createOptionsPanel() {
         return new JPanel(new FlowLayout(FlowLayout.LEFT));
-    }
-
-    private static boolean checkForMethodCallAndExactLambdaCall(PsiMethodCallExpression expression, CallMatcher streamCall, CallMatcher optionalCall) {
-        if (!streamCall.test(expression)) {
-            return false;
-        }
-
-        final PsiExpression psiOptExpression = expression.getArgumentList().getExpressions()[0];
-        if (!(psiOptExpression instanceof PsiMethodReferenceExpression) &&
-                !(psiOptExpression instanceof PsiLambdaExpression)) {
-            return false;
-        }
-
-        final PsiLambdaExpression lambdaOpt = getLambda(psiOptExpression);
-        if (lambdaOpt == null) {
-            return false;
-        }
-
-        final PsiExpression lambdaOptBody = LambdaUtil.extractSingleExpressionFromBody(lambdaOpt.getBody());
-        if (!(lambdaOptBody instanceof PsiMethodCallExpression)) {
-            return false;
-        }
-
-        final PsiMethodCallExpression optBody = (PsiMethodCallExpression) lambdaOptBody;
-        if (!optionalCall.test(optBody)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    @Nullable
-    private static PsiLambdaExpression getLambda(PsiExpression initializer) {
-        final PsiExpression expression = PsiUtil.skipParenthesizedExprDown(initializer);
-        if (expression instanceof PsiLambdaExpression) {
-            return (PsiLambdaExpression)expression;
-        }
-        if (expression instanceof PsiMethodReferenceExpression) {
-            return LambdaRefactoringUtil.createLambda((PsiMethodReferenceExpression)expression, false);
-        }
-
-        return null;
     }
 
     private static class OptionalStreamFix implements LocalQuickFix {
